@@ -1,69 +1,76 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InTheBag.Controllers
 {
-    public class AllAboutResultsController : Controller
+    public class AllAboutResults : Controller
     {
-        private static int fakeDayOffset = 0;
         public IActionResult Index()
         {
-            DayOfWeek weekday = DateTime.Now.AddDays(fakeDayOffset).DayOfWeek;
-            string day = weekday.ToString();
-            int time = DateTime.Now.Hour;
+            var weekday = DateTime.Now.DayOfWeek;
+            var day = weekday.ToString();
+            var time = DateTime.Now.Hour;
 
-            ++fakeDayOffset; //changes day by one with each refresh
-
-            //modified times slightly, it was making me sad that I now wake up at 5am to get to work by 6:30...
-            if(time < 5)
-                ViewBag.Greeting = "It's too early to be up!";
-            else if (time < 12)
-                ViewBag.Greeting = "Morning, good or bad have yet to be established...";
-            else if (time <= 17)
-                ViewBag.Greeting = "Good Afternoon!";
-            else if (time < 19)
-                ViewBag.Greeting = "Good Evening!";
+            if (time <= 6)
+            {
+                HttpContext.Session.SetString("greet", "It is too early to be up!");
+            }
+            else if (time <= 12)
+            {
+                HttpContext.Session.SetString("greet", "Good Morning");
+            }
+            else if (time <= 18)
+            {
+                HttpContext.Session.SetString("greet", "Good Afternoon");
+            }
             else
-                ViewBag.Greeting = "Good God it's time for bed!";
-
+            {
+                HttpContext.Session.SetString("greet", "Good Evening");
+            }
             int route = 0;
 
-            switch (day.ToLower())
+            switch (day)
             {
-                case "monday":
-                case "tuesday":
-                    ViewData["dayMessage"] = "Something is definatly broken today...";
+                case "Monday":
+                case "Tuesday":
+                    HttpContext.Session.SetString("dayMsg", "The work week just started!  Stay focused, you have a lot to do this week!");
                     route = 1;
                     break;
-                case "wednesday":
-                    ViewData["dayMessage"] = "Thank Jesus it's almost over";
+                case "Wednesday":
+                    HttpContext.Session.SetString("dayMsg", "Halfway to the weekend!");
                     route = 2;
                     break;
-                case "thursday":
-                    ViewData["dayMessage"] = "One more day of work...";
+                case "Thursday":
+                    HttpContext.Session.SetString("dayMsg", "Isn't it Friday somewhere?");
                     route = 3;
                     break;
-                case "friday":
-                    ViewData["dayMessage"] = "Just a few more hours!";
+                case "Friday":
+                    HttpContext.Session.SetString("dayMsg", "Woo hoo TGIF");
                     route = 4;
                     break;
                 default:
-                    ViewData["dayMessage"] = "Oh wait, I'm also a student... I don't get weekends. lolz";
+                    HttpContext.Session.SetString("dayMsg", "Ahhhh   the weekend!");
                     route = 5;
                     break;
             }
-
+            route = 4;
             if (route == 1)
+            {
                 return RedirectToAction("Weekday", "AllAboutResults");
+            }
             else if (route == 2 || route == 3)
+            {
                 return Redirect("https://lisabalbach.com/CIT218/Chapter8/HappyWednesday.html");
+            }
             else
+            {
                 return View();
+            }
         }
-
         public IActionResult Weekday()
         {
-            ViewBag.Greeting = "Alternative path discovered...";
+            HttpContext.Session.SetString("greet", "Congratulations, the work week just started and you have been rerouted!");
             return View();
         }
     }
